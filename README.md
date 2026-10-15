@@ -101,3 +101,7 @@ Neither statement establishes causal direction.
 ## Status
 
 Research prototype. The purpose of this repository is to make RALE/NIGHTINGALE concrete enough to test, falsify, improve, and compare against established explainability methods.
+
+## Lean decision-stage coverage
+
+[Source-pinned shared Lean verification](LEAN_VERIFICATION.md) covers the decision stage and records the remaining implementation obligations.
