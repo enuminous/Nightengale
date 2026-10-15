@@ -57,6 +57,8 @@ def _frame(X):
 def _edges(x, bins):
     # Quantile bins give more even empirical support than equal-width bins.
     q = np.linspace(0, 1, bins + 1)
+    if len(x) == 0:
+        return np.array([], dtype=float)
     e = np.unique(np.quantile(x, q))
     return e
 
@@ -114,17 +116,21 @@ def response_ale(response, x, bins=10):
     """
     response = np.asarray(response, float)
     x = np.asarray(x, float)
+    if response.ndim != 1 or x.ndim != 1 or response.shape != x.shape:
+        raise ValueError("response and x must be one-dimensional and have equal length")
     valid = np.isfinite(response) & np.isfinite(x)
+    # Recursion passes this response alongside the original frame. Preserve
+    # its row coordinates even when estimation excludes non-finite rows.
+    row_effect = np.full(len(x), np.nan)
     response, x = response[valid], x[valid]
     edges = _edges(x, bins)
     if len(edges) < 2:
-        return np.array([]), np.array([]), np.array([]), np.array([])
+        return np.array([]), np.array([]), np.array([]), row_effect
 
     K = len(edges) - 1
     idx = np.clip(np.searchsorted(edges, x, side="right") - 1, 0, K - 1)
     means = np.full(K, np.nan)
     counts = np.zeros(K, int)
-    row_effect = np.full(len(x), np.nan)
 
     for k in range(K):
         r = response[idx == k]
@@ -144,8 +150,7 @@ def response_ale(response, x, bins=10):
     accumulated = np.cumsum(local)
     w = counts / max(counts.sum(), 1)
     centered = accumulated - np.sum(w * accumulated)
-    for k in range(K):
-        row_effect[idx == k] = local[k]
+    row_effect[valid] = local[idx]
     centers = (edges[:-1] + edges[1:]) / 2
     return centers, centered, counts, row_effect
 

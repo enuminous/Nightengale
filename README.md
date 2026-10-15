@@ -105,3 +105,17 @@ Research prototype. The purpose of this repository is to make RALE/NIGHTINGALE c
 ## Lean decision-stage coverage
 
 [Source-pinned shared Lean verification](LEAN_VERIFICATION.md) covers the decision stage and records the remaining implementation obligations.
+
+## Recursive row alignment and verification
+
+`response_ale` estimates bin statistics using finite response/feature pairs.
+Its returned row effects retain the original input length and positions; excluded
+rows remain NaN. Recursive calls therefore stay aligned with the original frame.
+Empty or entirely excluded inputs return empty aggregate effects and an aligned
+NaN row array. Shape mismatches receive an explicit ValueError.
+
+Run `python -m pip install -r requirements-ci.txt` and `python -m pytest -q` to
+reproduce the pinned Python checks. Tests include multi-level recursion after
+row filtering, empty inputs, shape validation, feature exclusion and depth limits.
+These are implementation tests; the linked Lean decision-stage results retain
+their documented scope and do not prove NumPy's numerical implementation.
